@@ -3,10 +3,6 @@ import math
 from structures.base import StreamEstimator  
 
 class HyperLogLogPlusPlus(StreamEstimator):
-    """
-    HyperLogLog++ adaptado para la librería: estima cardinalidad de un flujo.
-    Usa representación dispersa (sparse) y densa (dense) de manera automática.
-    """
 
     def __init__(self, b: int = 12):
         if not (4 <= b <= 16):
@@ -28,11 +24,7 @@ class HyperLogLogPlusPlus(StreamEstimator):
         return mmh3.hash64(value.encode('utf-8'), signed=False)[0]
 
     def update(self, item, count=1):
-        """
-        Inserta el ítem en el sketch.
-        El parámetro 'count' se ignora (no tiene sentido en cardinalidad).
-        """
-        x = self._hash(item)
+        x = self._hash(str(item))
         idx = x >> self._w_bits
         w = x & ((1 << self._w_bits) - 1)
         rho = self._rho(w)
@@ -52,10 +44,6 @@ class HyperLogLogPlusPlus(StreamEstimator):
         self.sparse = None
 
     def estimate(self, item=None) -> float:
-        """
-        Estima la cardinalidad global del flujo.
-        El parámetro 'item' se ignora.
-        """
         if self.dense is not None:
             registers = self.dense
         else:
@@ -72,12 +60,9 @@ class HyperLogLogPlusPlus(StreamEstimator):
         if E > (1/30) * (1 << 64):
             E = - (1 << 64) * math.log(1 - E / (1 << 64))
 
-        return E
+        return int(E)
 
     def reset(self):
-        """
-        Reinicia el estado interno del sketch.
-        """
         self.sparse = {}
         self.dense = None
 

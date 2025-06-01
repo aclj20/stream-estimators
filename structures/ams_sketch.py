@@ -5,15 +5,12 @@ from structures.base import StreamEstimator  # Nuestra interfaz
 
 class AMSSketch(StreamEstimator):
     """
-    AMS Sketch para estimar el segundo momento (varianza de frecuencias) de un flujo.
-    
-    Usa múltiples "líneas" aleatorias con signos +/-1 para obtener un estimador robusto.
+    Estima el segundo momento de un flujo de datos
     """
 
     def __init__(self, num_projections: int = 10, seed: int = None):
         """
-        :param num_projections: Número de proyecciones (mayor => menos varianza).
-        :param seed: Semilla para reproducibilidad.
+        num_projections es el número de contadores
         """
         self.num_projections = num_projections
         self.seed = seed or randint(0, 1 << 30)
@@ -21,31 +18,25 @@ class AMSSketch(StreamEstimator):
 
     def _sign_hash(self, item, i):
         """
-        Genera un signo +/-1 para el ítem en la proyección i.
+        genera un signo +/-1 para el ítem para cada contador i
         """
         combined_seed = self.seed + i
         h = mmh3.hash(str(item), combined_seed, signed=True)
         return 1 if (h & 1) == 0 else -1
 
     def update(self, item, count=1):
-        """
-        Procesa la llegada de 'count' ocurrencias del ítem.
-        """
         for i in range(self.num_projections):
             sign = self._sign_hash(item, i)
             self.counters[i] += sign * count
 
     def estimate(self, item=None):
         """
-        Devuelve la estimación del segundo momento (F2).
+        estimación del segundo momento
         """
         estimates = [(c ** 2) for c in self.counters]
         return sum(estimates) / self.num_projections
 
     def reset(self):
-        """
-        Reinicia los contadores.
-        """
         self.counters = [0] * self.num_projections
 
     def __repr__(self):

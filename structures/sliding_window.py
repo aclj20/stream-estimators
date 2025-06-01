@@ -2,9 +2,6 @@ from collections import deque
 from structures.base import StreamEstimator
 
 class SlidingWindowAggregator(StreamEstimator):
-    """
-    Sliding Window Aggregator para mantener métricas de los últimos N elementos.
-    """
 
     def __init__(self, window_size: int = 100):
         if window_size < 1:
@@ -14,9 +11,6 @@ class SlidingWindowAggregator(StreamEstimator):
         self.sum = 0
 
     def update(self, item, count=1):
-        """
-        Inserta el ítem 'count' veces en la ventana.
-        """
         for _ in range(count):
             self.window.append(item)
             self.sum += item
@@ -25,18 +19,11 @@ class SlidingWindowAggregator(StreamEstimator):
                 self.sum -= removed
 
     def estimate(self, item=None):
-        """
-        Retorna el promedio de los últimos N elementos.
-        El parámetro 'item' se ignora.
-        """
         if not self.window:
             return 0
         return self.sum / len(self.window)
 
     def consultar_ventana_deslizante(self):
-        """
-        Devuelve un resumen de la ventana: suma, promedio, tamaño actual.
-        """
         return {
             "suma": self.sum,
             "promedio": self.sum / len(self.window) if self.window else 0,
@@ -46,9 +33,6 @@ class SlidingWindowAggregator(StreamEstimator):
         }
 
     def reset(self):
-        """
-        Reinicia la ventana.
-        """
         self.window.clear()
         self.sum = 0
 
